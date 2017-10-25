@@ -1,0 +1,24 @@
+{
+  "name": "cn-writing-pad",
+  "version": "0.0.1",
+  "description": "Chinese Character Writing Pad",
+  "main": "cn-writing-pad.js",
+  "scripts": {
+    "start": "gulp",
+    "build": "gulp build"
+  },
+  "devDependencies": {
+    "graceful-fs": "^4.0.0",
+    "gulp": "latest",
+    "gulp-open": "latest",
+    "gulp-typescript": "latest",
+    "gulp-uglify": "latest",
+    "minimatch": "^3.0.2",
+    "typescript": "latest"
+  },
+  "dependencies": {
+    "@mapbox/polyline": "^0.2.0",
+    "@types/node": "^8.0.46",
+    "@types/polyline": "^0.1.27"
+  }
+}

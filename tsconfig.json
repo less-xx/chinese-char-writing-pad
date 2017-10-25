@@ -1,0 +1,19 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "module": "system",
+        "moduleResolution": "node",
+        "emitDecoratorMetadata": true,
+        "experimentalDecorators": true,
+        "noImplicitAny": true,
+        "removeComments": true,
+        "preserveConstEnums": true,
+        "outFile": "cn-writing-pad.js",
+        "sourceMap": true,
+        "target": "es5",
+        "lib": [
+            "es2016",
+            "dom"
+        ]
+    }
+}

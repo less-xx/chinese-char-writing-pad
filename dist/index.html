@@ -1,0 +1,76 @@
+<html>
+
+<head>
+    <title>Chinese Character Writing Pad Sample</title>
+    <style>
+        button {
+            background-color: #4CAF50;
+            /* Green */
+            border: none;
+            color: white;
+            padding: 10px 8px;
+            margin: 5px 5px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            width: 100px;
+        }
+    </style>
+    <script type="text/javascript" src="cn-writing-pad.js"></script>
+    <script type="text/javascript" src="polyline.js"></script>
+    <script type="text/javascript">
+        var pad = null;
+
+        function onload() {
+            
+            pad1= new CharWritingPad.Pad(document.getElementById("pad1"));
+            pad1.character="你";
+            pad1.showCharOutline = true;
+            pad2= new CharWritingPad.Pad(document.getElementById("pad2"));
+            pad2.character="我";
+            pad2.showCharOutline = true;
+
+            pad2.didEndDrawSegment = function(data){
+                console.log(JSON.stringify(data));
+                pad1.setJsonObj(data);
+                document.getElementById("charImage").src = pad2.getCharImage();
+             }
+        }
+
+        function onClickUndo(){
+            pad2.undo();
+        }
+
+        function onClickHideChar(){
+            let bt1 = document.getElementById("bt1");
+            if(bt1.textContent=="Hide Character"){
+                bt1.textContent="Show Character";
+                pad2.showChar = false;
+            }else{
+                bt1.textContent="Hide Character";
+                pad2.showChar = true;
+            }
+        }
+
+        function onClickPlayback() {
+            pad1.playback();
+        }
+        
+    </script>
+</head>
+
+<body onload="onload()">
+    <div class="center" style="position: relative;">
+        <canvas id="pad1" style="width:300px; height:300px;"></canvas>
+        <canvas id="pad2" style="width:200px; height:200px;"></canvas>
+        <image id="charImage" title="Char Image" style="width:200px; height:200px;"/>
+    </div>
+    <div>
+        <button onclick="onClickUndo()">Undo</button>
+        <button id="bt1" onclick="onClickHideChar()">Hide Character</button>
+        <button onclick="onClickPlayback()">Playback</button>
+    </div>
+</body>
+
+</html>
