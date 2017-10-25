@@ -27,6 +27,8 @@ var CharWritingPad;
             this._canvas.height = this._canvas.clientHeight * devicePixelRatio();
             this._canvas.focus();
             this._context = this._canvas.getContext("2d");
+            var fontSize = this.calculateFontSize();
+            this._lineWidth = Math.floor(fontSize / 25.0);
             this._mouseDownHandler = function (e) { _this.mouseDown(e); };
             this._mouseMoveHandler = function (e) { _this.mouseMove(e); };
             this._mouseUpHandler = function (e) { _this.mouseUp(e); };
@@ -111,7 +113,7 @@ var CharWritingPad;
             this._context.textAlign = "center";
             this._context.textBaseline = "middle";
             var fontSize = this.calculateFontSize();
-            this._lineWidth = Math.floor(fontSize / 26.0);
+            this._lineWidth = Math.floor(fontSize / 25.0);
             this._context.font = fontSize + "px " + this._fontFamily;
             if (this._showCharOutline) {
                 this._context.strokeStyle = "rgba(100, 100, 100, 0.8)";
@@ -162,7 +164,7 @@ var CharWritingPad;
                     var ptIdx = 0;
                     var seg = pad._segments[segIndex++];
                     var interval = setInterval(function () {
-                        if (ptIdx >= seg.points.length) {
+                        if (ptIdx > seg.points.length) {
                             clearInterval(interval);
                             drawSeg();
                             return;
@@ -271,11 +273,11 @@ var CharWritingPad;
         };
         Pad.prototype.setJsonObj = function (jsonObj) {
             this._char = jsonObj['char'];
-            this._lineWidth = jsonObj['lineWidth'];
             var width = jsonObj['size']['width'];
             var height = jsonObj['size']['height'];
             var scaleX = this._canvas.clientWidth / width;
             var scaleY = this._canvas.clientHeight / height;
+            this._lineWidth = Math.floor(jsonObj['lineWidth'] * scaleX);
             this._segments = jsonObj['segments'].map(function (seg) {
                 return CharSegment.fromJsonObj(seg, scaleX, scaleY);
             });

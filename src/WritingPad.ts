@@ -46,6 +46,8 @@ module CharWritingPad {
             this._canvas.height = this._canvas.clientHeight * devicePixelRatio();
             this._canvas.focus();
             this._context = this._canvas.getContext("2d");
+            let fontSize = this.calculateFontSize();
+            this._lineWidth = Math.floor(fontSize / 25.0);
 
             this._mouseDownHandler = (e: MouseEvent) => { this.mouseDown(e); };
             this._mouseMoveHandler = (e: MouseEvent) => { this.mouseMove(e); };
@@ -130,7 +132,7 @@ module CharWritingPad {
             this._context.textBaseline = "middle";
             let fontSize = this.calculateFontSize();
             //console.log(`font size: ${fontSize}`);
-            this._lineWidth = Math.floor(fontSize / 26.0);
+            this._lineWidth = Math.floor(fontSize / 25.0);
             this._context.font = fontSize + "px " + this._fontFamily;
 
             if (this._showCharOutline) {
@@ -189,7 +191,7 @@ module CharWritingPad {
                     let seg = pad._segments[segIndex++];
                     //console.log(`=== will draw segment ${segIndex}`);
                     let interval = setInterval(function () {
-                        if (ptIdx >= seg.points.length) {
+                        if (ptIdx > seg.points.length) {
                             clearInterval(interval);
                             drawSeg();
                             return;
@@ -314,11 +316,11 @@ module CharWritingPad {
 
         public setJsonObj(jsonObj: any) {
             this._char = jsonObj['char'];
-            this._lineWidth = jsonObj['lineWidth'];
             let width = jsonObj['size']['width'];
             let height = jsonObj['size']['height'];
             let scaleX = this._canvas.clientWidth / width;
             let scaleY = this._canvas.clientHeight / height;
+            this._lineWidth = Math.floor(jsonObj['lineWidth'] * scaleX);
             this._segments = jsonObj['segments'].map((seg: string) => {
                 return CharSegment.fromJsonObj(seg, scaleX, scaleY);
             });
