@@ -7,6 +7,18 @@
     "start": "gulp",
     "build": "gulp build"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/less-xx/chinese-char-writing-pad.git"
+  },
+  "keywords": ["Chinese character writing", "Web based", "HTML5 Canvas"],
+  "maintainers": [
+    {
+      "name": "Less Jiang",
+      "email": "oursleepless@gmail.com"
+    }
+  ],
+  "license": "Apache License V2",
   "devDependencies": {
     "graceful-fs": "^4.0.0",
     "gulp": "latest",
