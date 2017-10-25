@@ -41,6 +41,7 @@ module CharWritingPad {
         constructor(canvas: HTMLCanvasElement) {
 
             this._canvas = canvas;
+            this._canvas.style.cursor = "pointer";
             this._canvas.width = this._canvas.clientWidth * devicePixelRatio();
             this._canvas.height = this._canvas.clientHeight * devicePixelRatio();
             this._canvas.focus();
@@ -80,6 +81,20 @@ module CharWritingPad {
 
         public get showChar(): boolean {
             return this._showCharacter;
+        }
+
+        public get writable():boolean {
+            return this._writable;
+        }
+
+        public set writable(writable:boolean) {
+            this._writable = writable;
+            if(writable){
+                this._canvas.style.cursor="pointer";
+            }else{
+                this._canvas.style.cursor="not-allowed";
+            }
+            
         }
 
         private calculateFontSize(): number {
@@ -148,7 +163,7 @@ module CharWritingPad {
             this._context.restore();
             //console.log(`Draw my writing ${this._segments.length} segments done.`)
         }
-        
+
         private drawMyWritingSegment(segment: CharSegment, stopIndex: number = segment.points.length) {
             let points = segment.points;
             if (points.length <= 1) {
@@ -191,7 +206,7 @@ module CharWritingPad {
                         pad._context.lineWidth = pad._lineWidth;
                         pad._context.lineCap = "round";
                         pad._context.lineJoin = "round";
-                        for(var i=0; i<segIndex-1; i++){
+                        for (var i = 0; i < segIndex - 1; i++) {
                             pad._segments[i].draw(pad._context);
                         }
                         seg.draw(pad._context, ptIdx);
@@ -215,9 +230,8 @@ module CharWritingPad {
             if (this._showCharacter) {
                 this.drawCharacter();
             }
-            if (this._writable) {
-                this.drawMyWriting();
-            }
+            
+            this.drawMyWriting();
         }
 
         private mousePoint(e: MouseEvent): Point {
@@ -236,6 +250,9 @@ module CharWritingPad {
         }
 
         private mouseDown(e: MouseEvent) {
+            if (!this._writable) {
+                return;
+            }
             this._isMouseDown = true;
             this._p1 = this.mousePoint(e);
             this._currentWritingSegment = new CharSegment();
@@ -245,6 +262,9 @@ module CharWritingPad {
         }
 
         private mouseUp(e: MouseEvent) {
+            if (!this._writable) {
+                return;
+            }
             this._isMouseDown = false;
             if (this._currentWritingSegment.points.length > 1) {
                 this._segments.push(this._currentWritingSegment);
@@ -256,6 +276,9 @@ module CharWritingPad {
         }
 
         private mouseMove(e: MouseEvent) {
+            if (!this._writable) {
+                return;
+            }
             e.preventDefault();
             if (this._isMouseDown) {
                 var p2 = this.mousePoint(e);

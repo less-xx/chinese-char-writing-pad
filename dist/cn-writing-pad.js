@@ -22,6 +22,7 @@ var CharWritingPad;
             this._lineWidth = 16.0;
             this.didEndDrawSegment = function (data) { };
             this._canvas = canvas;
+            this._canvas.style.cursor = "pointer";
             this._canvas.width = this._canvas.clientWidth * devicePixelRatio();
             this._canvas.height = this._canvas.clientHeight * devicePixelRatio();
             this._canvas.focus();
@@ -63,6 +64,22 @@ var CharWritingPad;
             set: function (show) {
                 this._showCharacter = show;
                 this.draw();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        Object.defineProperty(Pad.prototype, "writable", {
+            get: function () {
+                return this._writable;
+            },
+            set: function (writable) {
+                this._writable = writable;
+                if (writable) {
+                    this._canvas.style.cursor = "pointer";
+                }
+                else {
+                    this._canvas.style.cursor = "not-allowed";
+                }
             },
             enumerable: true,
             configurable: true
@@ -180,9 +197,7 @@ var CharWritingPad;
             if (this._showCharacter) {
                 this.drawCharacter();
             }
-            if (this._writable) {
-                this.drawMyWriting();
-            }
+            this.drawMyWriting();
         };
         Pad.prototype.mousePoint = function (e) {
             var p = new Point(e.pageX, e.pageY);
@@ -199,6 +214,9 @@ var CharWritingPad;
             return p;
         };
         Pad.prototype.mouseDown = function (e) {
+            if (!this._writable) {
+                return;
+            }
             this._isMouseDown = true;
             this._p1 = this.mousePoint(e);
             this._currentWritingSegment = new CharSegment();
@@ -206,6 +224,9 @@ var CharWritingPad;
             this.draw();
         };
         Pad.prototype.mouseUp = function (e) {
+            if (!this._writable) {
+                return;
+            }
             this._isMouseDown = false;
             if (this._currentWritingSegment.points.length > 1) {
                 this._segments.push(this._currentWritingSegment);
@@ -216,6 +237,9 @@ var CharWritingPad;
             this.didEndDrawSegment(data);
         };
         Pad.prototype.mouseMove = function (e) {
+            if (!this._writable) {
+                return;
+            }
             e.preventDefault();
             if (this._isMouseDown) {
                 var p2 = this.mousePoint(e);

@@ -14,7 +14,7 @@
             text-decoration: none;
             display: inline-block;
             font-size: 16px;
-            width: 100px;
+            width: 150px;
         }
     </style>
     <script type="text/javascript" src="cn-writing-pad.js"></script>
@@ -25,8 +25,9 @@
         function onload() {
             
             pad1= new CharWritingPad.Pad(document.getElementById("pad1"));
-            pad1.character="你";
-            pad1.showCharOutline = true;
+            pad1.writable = false;
+            pad1.showChar = false;
+            //pad1.showCharOutline = true;
             pad2= new CharWritingPad.Pad(document.getElementById("pad2"));
             pad2.character="我";
             pad2.showCharOutline = true;
@@ -64,7 +65,7 @@
     <div class="center" style="position: relative;">
         <canvas id="pad1" style="width:300px; height:300px;"></canvas>
         <canvas id="pad2" style="width:200px; height:200px;"></canvas>
-        <image id="charImage" title="Char Image" style="width:200px; height:200px;"/>
+        <image id="charImage" title="Char Image" alt="display writing as image" style="width:200px; height:200px;"/>
     </div>
     <div>
         <button onclick="onClickUndo()">Undo</button>
