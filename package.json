@@ -33,8 +33,6 @@
     "typescript": "latest"
   },
   "dependencies": {
-    "@mapbox/polyline": "^0.2.0",
-    "@types/node": "^8.0.46",
-    "@types/polyline": "^0.1.27"
+    "@mapbox/polyline": "^0.2.0"
   }
 }

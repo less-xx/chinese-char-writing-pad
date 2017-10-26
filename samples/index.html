@@ -57,6 +57,16 @@
         function onClickPlayback() {
             pad1.playback();
         }
+
+        function onClickShowStrokes() {
+            let div = document.getElementById("orderedStrokesDiv");
+            div.innerHTML="";
+            let imgs = pad1.getStrokeImages();
+            imgs.forEach(function(img) {
+                img.style="border: 1 solid black;";
+                div.appendChild(img);
+            }, this);
+        }
         
     </script>
 </head>
@@ -71,7 +81,9 @@
         <button onclick="onClickUndo()">Undo</button>
         <button id="bt1" onclick="onClickHideChar()">Hide Character</button>
         <button onclick="onClickPlayback()">Playback</button>
+        <button onclick="onClickShowStrokes()">Show Ordered Strokes</button>
     </div>
+    <div id="orderedStrokesDiv"></div>
 </body>
 
 </html>

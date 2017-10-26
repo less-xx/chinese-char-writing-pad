@@ -1,3 +1,70 @@
+var Tools;
+(function (Tools) {
+    function pHash(img) {
+        var size = 32, smallerSize = 8;
+        var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+        document.body.appendChild(canvas);
+        canvas.width = size;
+        canvas.height = size;
+        ctx.drawImage(img, 0, -size, size, size * 3);
+        var im = ctx.getImageData(0, 0, size, size);
+        var vals = new Float64Array(size * size);
+        for (var i = 0; i < size; i++) {
+            for (var j = 0; j < size; j++) {
+                var base = 4 * (size * i + j);
+                vals[size * i + j] = 0.299 * im.data[base] +
+                    0.587 * im.data[base + 1] +
+                    0.114 * im.data[base + 2];
+            }
+        }
+        function applyDCT2(N, f) {
+            var c = new Float64Array(N);
+            for (var i = 1; i < N; i++)
+                c[i] = 1;
+            c[0] = 1 / Math.sqrt(2);
+            var F = new Float64Array(N * N);
+            var entries = (2 * N) * (N - 1);
+            var COS = new Float64Array(entries);
+            for (var i = 0; i < entries; i++)
+                COS[i] = Math.cos(i / (2 * N) * Math.PI);
+            for (var u = 0; u < N; u++) {
+                for (var v = 0; v < N; v++) {
+                    var sum = 0;
+                    for (var i = 0; i < N; i++) {
+                        for (var j = 0; j < N; j++) {
+                            sum += COS[(2 * i + 1) * u]
+                                * COS[(2 * j + 1) * v]
+                                * f[N * i + j];
+                        }
+                    }
+                    sum *= ((c[u] * c[v]) / 4);
+                    F[N * u + v] = sum;
+                }
+            }
+            return F;
+        }
+        var dctVals = applyDCT2(size, vals);
+        var vals1 = [];
+        for (var x = 1; x <= smallerSize; x++) {
+            for (var y = 1; y <= smallerSize; y++) {
+                vals1.push(dctVals[size * x + y]);
+            }
+        }
+        var median = vals1.slice(0).sort(function (a, b) {
+            return a - b;
+        })[Math.floor(vals1.length / 2)];
+        return vals1.map(function (e) {
+            return e > median ? '1' : '0';
+        }).join('');
+    }
+    function distance(a, b) {
+        var dist = 0;
+        for (var i = 0; i < a.length; i++)
+            if (a[i] != b[i])
+                dist++;
+        return dist;
+    }
+})(Tools || (Tools = {}));
 var CharWritingPad;
 (function (CharWritingPad) {
     function devicePixelRatio() {
@@ -270,6 +337,28 @@ var CharWritingPad;
         };
         Pad.prototype.getCharImage = function () {
             return this._canvas.toDataURL('image/png');
+        };
+        Pad.prototype.getStrokeImages = function () {
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = this._canvas.width;
+            canvas.height = this._canvas.height;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = this._lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            var idx = 0;
+            var images = this._segments.map(function (seg) {
+                seg.draw(ctx);
+                var img = new Image();
+                img.width = canvas.width / devicePixelRatio();
+                img.height = canvas.height / devicePixelRatio();
+                img.src = canvas.toDataURL('image/png');
+                console.log("Created stroke image " + idx++ + ", size: " + img.width + ", " + img.height);
+                return img;
+            });
+            return images;
         };
         Pad.prototype.setJsonObj = function (jsonObj) {
             this._char = jsonObj['char'];

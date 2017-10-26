@@ -85,18 +85,18 @@ module CharWritingPad {
             return this._showCharacter;
         }
 
-        public get writable():boolean {
+        public get writable(): boolean {
             return this._writable;
         }
 
-        public set writable(writable:boolean) {
+        public set writable(writable: boolean) {
             this._writable = writable;
-            if(writable){
-                this._canvas.style.cursor="pointer";
-            }else{
-                this._canvas.style.cursor="not-allowed";
+            if (writable) {
+                this._canvas.style.cursor = "pointer";
+            } else {
+                this._canvas.style.cursor = "not-allowed";
             }
-            
+
         }
 
         private calculateFontSize(): number {
@@ -232,7 +232,7 @@ module CharWritingPad {
             if (this._showCharacter) {
                 this.drawCharacter();
             }
-            
+
             this.drawMyWriting();
         }
 
@@ -312,6 +312,29 @@ module CharWritingPad {
 
         public getCharImage(): any {
             return this._canvas.toDataURL('image/png');
+        }
+
+        public getStrokeImages(): HTMLImageElement[] {
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = this._canvas.width;
+            canvas.height = this._canvas.height;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = this._lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            let idx = 0;
+            let images = this._segments.map((seg) => {
+                seg.draw(ctx);
+                let img = new Image();
+                img.width = canvas.width/devicePixelRatio();
+                img.height = canvas.height/devicePixelRatio();
+                img.src = canvas.toDataURL('image/png');
+                console.log(`Created stroke image ${idx++}, size: ${img.width}, ${img.height}`);
+                return img;
+            });
+            return images;
         }
 
         public setJsonObj(jsonObj: any) {
