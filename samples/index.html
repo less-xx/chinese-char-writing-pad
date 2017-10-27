@@ -22,34 +22,44 @@
     <script type="text/javascript">
         var pad = null;
 
+        pValues = [
+            "70c38f8e9c387871",
+            "72878f8ed8783921",
+            "768e878ed8783131",
+            "768ea5ced8783121",
+            "6c86934ddc792925",
+            "6c86938bd45931e6",
+            "6a86830df45933e6"
+        ];
+
         function onload() {
-            
-            pad1= new CharWritingPad.Pad(document.getElementById("pad1"));
+
+            pad1 = new CharWritingPad.Pad(document.getElementById("pad1"));
             pad1.writable = false;
             pad1.showChar = false;
             //pad1.showCharOutline = true;
-            pad2= new CharWritingPad.Pad(document.getElementById("pad2"));
-            pad2.character="我";
+            pad2 = new CharWritingPad.Pad(document.getElementById("pad2"));
+            pad2.character = "我";
             pad2.showCharOutline = true;
 
-            pad2.didEndDrawSegment = function(data){
+            pad2.didEndDrawSegment = function (data) {
                 console.log(JSON.stringify(data));
                 pad1.setJsonObj(data);
                 document.getElementById("charImage").src = pad2.getCharImage();
-             }
+            }
         }
 
-        function onClickUndo(){
+        function onClickUndo() {
             pad2.undo();
         }
 
-        function onClickHideChar(){
+        function onClickHideChar() {
             let bt1 = document.getElementById("bt1");
-            if(bt1.textContent=="Hide Character"){
-                bt1.textContent="Show Character";
+            if (bt1.textContent == "Hide Character") {
+                bt1.textContent = "Show Character";
                 pad2.showChar = false;
-            }else{
-                bt1.textContent="Hide Character";
+            } else {
+                bt1.textContent = "Hide Character";
                 pad2.showChar = true;
             }
         }
@@ -60,14 +70,21 @@
 
         function onClickShowStrokes() {
             let div = document.getElementById("orderedStrokesDiv");
-            div.innerHTML="";
+            div.innerHTML = "";
             let imgs = pad1.getStrokeImages();
-            imgs.forEach(function(img) {
-                img.style="border: 1 solid black;";
+            for(var i=0;i<imgs.length;i++){
+                let img = imgs[i];
+                let num=i;
+                let pv = pValues[i];
+                img.style = "border: 1 solid black;";
+                img.onload = function () {
+                    let phash = CharWritingPad.Tools.pHash(img);
+                    let distance = CharWritingPad.Tools.distance(phash,pv);
+                    console.log(`pHash[${num}]=${phash}, distance=${distance}`);
+                }
                 div.appendChild(img);
-            }, this);
+            }
         }
-        
     </script>
 </head>
 
@@ -75,7 +92,7 @@
     <div class="center" style="position: relative;">
         <canvas id="pad1" style="width:300px; height:300px;"></canvas>
         <canvas id="pad2" style="width:200px; height:200px;"></canvas>
-        <image id="charImage" title="Char Image" alt="display writing as image" style="width:200px; height:200px;"/>
+        <image id="charImage" title="Char Image" alt="display writing as image" style="width:200px; height:200px;" />
     </div>
     <div>
         <button onclick="onClickUndo()">Undo</button>
