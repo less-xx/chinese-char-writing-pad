@@ -72,15 +72,15 @@
             let div = document.getElementById("orderedStrokesDiv");
             div.innerHTML = "";
             let imgs = pad1.getStrokeImages();
-            for(var i=0;i<imgs.length;i++){
+            for (var i = 0; i < imgs.length; i++) {
                 let img = imgs[i];
-                let num=i;
+                let num = i;
                 let pv = pValues[i];
                 img.style = "border: 1 solid black;";
                 img.onload = function () {
                     let phash = CharWritingPad.Tools.pHash(img);
-                    let distance = CharWritingPad.Tools.distance(phash,pv);
-                    console.log(`pHash[${num}]=${phash}, distance=${distance}`);
+                    let sim = CharWritingPad.Tools.similarity(phash, pv);
+                    console.log(`pHash[${num}]=${phash}, similarity=${sim}`);
                 }
                 div.appendChild(img);
             }

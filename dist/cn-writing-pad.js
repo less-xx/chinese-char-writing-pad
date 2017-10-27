@@ -69,6 +69,9 @@ var CharWritingPad;
         };
         Tools.distance = function (phash1, phash2) {
             var LEN = 16;
+            if (phash1 == null || phash2 == null) {
+                return 1;
+            }
             if (phash1.length != LEN || phash2.length != LEN) {
                 console.log("Invalid pHash string length.");
                 return 1;
@@ -84,6 +87,11 @@ var CharWritingPad;
                 }
             }
             return dist;
+        };
+        Tools.similarity = function (phash1, phash2) {
+            var dist = Tools.distance(phash1, phash2);
+            console.log("distance from phash1 (" + phash1 + ") to phash2 (" + phash2 + ") is " + dist);
+            return 1 - dist / 64.0;
         };
         return Tools;
     }());
