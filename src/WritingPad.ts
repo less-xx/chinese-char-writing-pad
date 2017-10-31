@@ -132,7 +132,7 @@ module CharWritingPad {
             this._context.textBaseline = "middle";
             let fontSize = this.calculateFontSize();
             //console.log(`font size: ${fontSize}`);
-            this._lineWidth = Math.floor(fontSize / 25.0);
+            this._lineWidth = Math.floor(fontSize / 20.0);
             this._context.font = fontSize + "px " + this._fontFamily;
 
             if (this._showCharOutline) {
@@ -179,7 +179,7 @@ module CharWritingPad {
             this._context.stroke();
         }
 
-        public playback() {
+        public playback(speedFactor: number = 1.0) {
             let segIndex = 0;
             let pad = this;
             let drawSeg = function () {
@@ -215,14 +215,15 @@ module CharWritingPad {
                         //console.log(`== draw segment ${segIndex}, to points ${ptIdx}`);
                         pad._context.restore();
                         ptIdx = ptIdx + 1;
-                    }, 30);
-                }, 500);
+                    }, 50 / speedFactor);
+                }, 500 / speedFactor);
             }
             drawSeg();
         }
 
 
         draw() {
+
             this._context.clearRect(0, 0, this._canvas.width, this._canvas.height);
 
             if (this._showGrid) {
@@ -270,11 +271,17 @@ module CharWritingPad {
             this._isMouseDown = false;
             if (this._currentWritingSegment.points.length > 1) {
                 this._segments.push(this._currentWritingSegment);
+            } else {
+                return;
             }
             this._currentWritingSegment = null;
+            this.getSegmentPHash(this._segments[this._segments.length - 1], (pHash) => {
+                this._segments[this._segments.length - 1].phash = pHash;
+                let data = this.toJsonObj();
+                this.didEndDrawSegment(data);
+            })
+
             this.draw();
-            let data = this.toJsonObj();
-            this.didEndDrawSegment(data);
         }
 
         private mouseMove(e: MouseEvent) {
@@ -305,7 +312,7 @@ module CharWritingPad {
                 size: { width: this._canvas.clientWidth, height: this._canvas.clientWidth },
                 lineWidth: this._lineWidth,
                 segments: this._segments.map((seg) => {
-                    return seg.toString();
+                    return seg.toJsonObj();
                 })
             };
         }
@@ -326,11 +333,13 @@ module CharWritingPad {
             ctx.lineJoin = "round";
             let idx = 0;
             let images = this._segments.map((seg) => {
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 seg.draw(ctx);
                 let img = new Image();
-                img.width = canvas.width/devicePixelRatio();
-                img.height = canvas.height/devicePixelRatio();
-                img.src = canvas.toDataURL('image/png');
+                img.width = canvas.width / devicePixelRatio();
+                img.height = canvas.height / devicePixelRatio();
+                let data = canvas.toDataURL('image/png');
+                img.src = data;
                 console.log(`Created stroke image ${idx++}, size: ${img.width}, ${img.height}`);
                 return img;
             });
@@ -344,10 +353,33 @@ module CharWritingPad {
             let scaleX = this._canvas.clientWidth / width;
             let scaleY = this._canvas.clientHeight / height;
             this._lineWidth = Math.floor(jsonObj['lineWidth'] * scaleX);
-            this._segments = jsonObj['segments'].map((seg: string) => {
+            this._segments = jsonObj['segments'].map((seg: any) => {
                 return CharSegment.fromJsonObj(seg, scaleX, scaleY);
             });
             this.draw();
+        }
+
+        public getSegmentPHash(seg: CharSegment, callback: (pHash: string) => void) {
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = this._canvas.width;
+            canvas.height = this._canvas.height;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = this._lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            let idx = 0;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            seg.draw(ctx);
+            let img = new Image();
+            img.width = canvas.width / devicePixelRatio();
+            img.height = canvas.height / devicePixelRatio();
+            let data = canvas.toDataURL('image/png');
+            img.src = data;
+            img.onload = function () {
+                callback(Tools.pHash(img));
+            }
         }
     }
 
@@ -382,9 +414,18 @@ module CharWritingPad {
 
     export class CharSegment {
         public points: Point[];
+        public phash:string;
 
         constructor() {
             this.points = [];
+        }
+
+        public set pHash(value:string){
+            this.phash = value;
+        }
+
+        public get pHash():string {
+            return this.phash;
         }
 
         public draw(context: CanvasRenderingContext2D, stopPointIdx = this.points.length) {
@@ -400,21 +441,21 @@ module CharWritingPad {
         }
 
         public toJsonObj(): any {
-            return this.points.map((p) => {
+            let path = polyline.encode(this.points.map((p) => {
                 return p.toJsonObj();
-            });
+            }));
+            return {
+                path: path,
+                phash: this.phash
+            };
         }
 
-        public toString(): string {
-            let jsonObj = this.toJsonObj();
-            return polyline.encode(jsonObj);
-        }
-
-        public static fromJsonObj(encodedStr: string, scaleX: number = 1.0, scaleY: number = 1.0): CharSegment {
+        public static fromJsonObj(jsonObj:any, scaleX: number = 1.0, scaleY: number = 1.0): CharSegment {
             let seg = new CharSegment();
-            seg.points = polyline.decode(encodedStr).map((p) => {
+            seg.points = polyline.decode(jsonObj.path).map((p) => {
                 return Point.fromJsonObj(p, scaleX, scaleY);
             });
+            seg.phash = jsonObj.phash;
             return seg;
         }
 

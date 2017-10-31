@@ -12,7 +12,7 @@ module CharWritingPad {
             var canvas = document.createElement('canvas'),
                 ctx = canvas.getContext('2d');
 
-            //document.body.appendChild(canvas)
+            document.body.appendChild(canvas)
 
             /* 1. Reduce size. 
              * Like Average Hash, pHash starts with a small image. 

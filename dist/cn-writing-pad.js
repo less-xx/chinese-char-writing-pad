@@ -6,6 +6,7 @@ var CharWritingPad;
         Tools.pHash = function (img) {
             var size = 32, smallerSize = 8;
             var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            document.body.appendChild(canvas);
             canvas.width = size;
             canvas.height = size;
             ctx.drawImage(img, 0, 0, size, size);
@@ -212,7 +213,7 @@ var CharWritingPad;
             this._context.textAlign = "center";
             this._context.textBaseline = "middle";
             var fontSize = this.calculateFontSize();
-            this._lineWidth = Math.floor(fontSize / 25.0);
+            this._lineWidth = Math.floor(fontSize / 20.0);
             this._context.font = fontSize + "px " + this._fontFamily;
             if (this._showCharOutline) {
                 this._context.strokeStyle = "rgba(100, 100, 100, 0.8)";
@@ -252,7 +253,8 @@ var CharWritingPad;
             }
             this._context.stroke();
         };
-        Pad.prototype.playback = function () {
+        Pad.prototype.playback = function (speedFactor) {
+            if (speedFactor === void 0) { speedFactor = 1.0; }
             var segIndex = 0;
             var pad = this;
             var drawSeg = function () {
@@ -285,8 +287,8 @@ var CharWritingPad;
                         seg.draw(pad._context, ptIdx);
                         pad._context.restore();
                         ptIdx = ptIdx + 1;
-                    }, 30);
-                }, 500);
+                    }, 50 / speedFactor);
+                }, 500 / speedFactor);
             };
             drawSeg();
         };
@@ -325,6 +327,7 @@ var CharWritingPad;
             this.draw();
         };
         Pad.prototype.mouseUp = function (e) {
+            var _this = this;
             if (!this._writable) {
                 return;
             }
@@ -332,10 +335,16 @@ var CharWritingPad;
             if (this._currentWritingSegment.points.length > 1) {
                 this._segments.push(this._currentWritingSegment);
             }
+            else {
+                return;
+            }
             this._currentWritingSegment = null;
+            this.getSegmentPHash(this._segments[this._segments.length - 1], function (pHash) {
+                _this._segments[_this._segments.length - 1].phash = pHash;
+                var data = _this.toJsonObj();
+                _this.didEndDrawSegment(data);
+            });
             this.draw();
-            var data = this.toJsonObj();
-            this.didEndDrawSegment(data);
         };
         Pad.prototype.mouseMove = function (e) {
             if (!this._writable) {
@@ -363,7 +372,7 @@ var CharWritingPad;
                 size: { width: this._canvas.clientWidth, height: this._canvas.clientWidth },
                 lineWidth: this._lineWidth,
                 segments: this._segments.map(function (seg) {
-                    return seg.toString();
+                    return seg.toJsonObj();
                 })
             };
         };
@@ -382,11 +391,13 @@ var CharWritingPad;
             ctx.lineJoin = "round";
             var idx = 0;
             var images = this._segments.map(function (seg) {
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
                 seg.draw(ctx);
                 var img = new Image();
                 img.width = canvas.width / devicePixelRatio();
                 img.height = canvas.height / devicePixelRatio();
-                img.src = canvas.toDataURL('image/png');
+                var data = canvas.toDataURL('image/png');
+                img.src = data;
                 console.log("Created stroke image " + idx++ + ", size: " + img.width + ", " + img.height);
                 return img;
             });
@@ -403,6 +414,28 @@ var CharWritingPad;
                 return CharSegment.fromJsonObj(seg, scaleX, scaleY);
             });
             this.draw();
+        };
+        Pad.prototype.getSegmentPHash = function (seg, callback) {
+            var canvas = document.createElement('canvas'), ctx = canvas.getContext('2d');
+            canvas.width = this._canvas.width;
+            canvas.height = this._canvas.height;
+            ctx.fillStyle = "white";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.strokeStyle = "black";
+            ctx.lineWidth = this._lineWidth;
+            ctx.lineCap = "round";
+            ctx.lineJoin = "round";
+            var idx = 0;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            seg.draw(ctx);
+            var img = new Image();
+            img.width = canvas.width / devicePixelRatio();
+            img.height = canvas.height / devicePixelRatio();
+            var data = canvas.toDataURL('image/png');
+            img.src = data;
+            img.onload = function () {
+                callback(CharWritingPad.Tools.pHash(img));
+            };
         };
         Pad.MIN_POINT_DIST = 5;
         return Pad;
@@ -438,6 +471,16 @@ var CharWritingPad;
         function CharSegment() {
             this.points = [];
         }
+        Object.defineProperty(CharSegment.prototype, "pHash", {
+            get: function () {
+                return this.phash;
+            },
+            set: function (value) {
+                this.phash = value;
+            },
+            enumerable: true,
+            configurable: true
+        });
         CharSegment.prototype.draw = function (context, stopPointIdx) {
             if (stopPointIdx === void 0) { stopPointIdx = this.points.length; }
             if (this.points.length <= 1) {
@@ -451,21 +494,22 @@ var CharWritingPad;
             context.stroke();
         };
         CharSegment.prototype.toJsonObj = function () {
-            return this.points.map(function (p) {
+            var path = polyline.encode(this.points.map(function (p) {
                 return p.toJsonObj();
-            });
+            }));
+            return {
+                path: path,
+                phash: this.phash
+            };
         };
-        CharSegment.prototype.toString = function () {
-            var jsonObj = this.toJsonObj();
-            return polyline.encode(jsonObj);
-        };
-        CharSegment.fromJsonObj = function (encodedStr, scaleX, scaleY) {
+        CharSegment.fromJsonObj = function (jsonObj, scaleX, scaleY) {
             if (scaleX === void 0) { scaleX = 1.0; }
             if (scaleY === void 0) { scaleY = 1.0; }
             var seg = new CharSegment();
-            seg.points = polyline.decode(encodedStr).map(function (p) {
+            seg.points = polyline.decode(jsonObj.path).map(function (p) {
                 return Point.fromJsonObj(p, scaleX, scaleY);
             });
+            seg.phash = jsonObj.phash;
             return seg;
         };
         return CharSegment;
