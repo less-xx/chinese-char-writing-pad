@@ -1,4 +1,4 @@
-module CharWritingPad {
+export module CharWritingPad {
 
     declare interface ObjectConstructor {
         assign(...objects: Object[]): Object;

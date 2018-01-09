@@ -1,4 +1,4 @@
-module CharWritingPad {
+export module CharWritingPad {
 
     /**
      * Port from https://github.com/naptha/phash.js
