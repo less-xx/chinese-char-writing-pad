@@ -17,37 +17,9 @@
             width: 150px;
         }
     </style>
-    <script type="text/javascript" src="cn-writing-pad.js"></script>
     <script type="text/javascript" src="polyline.js"></script>
     <script type="text/javascript">
-        var pad = null;
-
-        pValues = [
-            "70c68f8f9d187870",
-            "7897874978389687",
-            "c78e1c8773718c38",
-            "878d70628f9970c7",
-            "6d32922996d969d2",
-            "3725cb92244d93e6",
-            "db2d25242492dadb"
-        ];
-
-        function onload() {
-
-            pad1 = new CharWritingPad.Pad(document.getElementById("pad1"));
-            pad1.writable = false;
-            pad1.showChar = false;
-            //pad1.showCharOutline = true;
-            pad2 = new CharWritingPad.Pad(document.getElementById("pad2"));
-            pad2.character = "我";
-            pad2.showCharOutline = true;
-
-            pad2.didEndDrawSegment = function (data) {
-                console.log(JSON.stringify(data));
-                pad1.setJsonObj(data);
-                document.getElementById("charImage").src = pad2.getCharImage();
-            }
-        }
+        var pad1, pad2 = null;
 
         function onClickUndo() {
             pad2.undo();
@@ -78,8 +50,8 @@
                 let pv = pValues[i];
                 img.style = "border: 1 solid black;";
                 img.onload = function () {
-                    let phash = CharWritingPad.Tools.pHash(img);
-                    let sim = CharWritingPad.Tools.similarity(phash, pv);
+                    let phash = WritingPad.Tools.pHash(img);
+                    let sim = WritingPad.Tools.similarity(phash, pv);
                     console.log(`pHash[${num}]=${phash}, similarity=${sim}`);
                 }
                 div.appendChild(img);
@@ -88,7 +60,7 @@
     </script>
 </head>
 
-<body onload="onload()">
+<body>
     <div class="center" style="position: relative;">
         <canvas id="pad1" style="width:300px; height:300px;"></canvas>
         <canvas id="pad2" style="width:200px; height:200px;"></canvas>
@@ -101,6 +73,32 @@
         <button onclick="onClickShowStrokes()">Show Ordered Strokes</button>
     </div>
     <div id="orderedStrokesDiv"></div>
+    <script src="bundle.js"></script>
+    <script>
+        pValues = [
+            "70c68f8f9d187870",
+            "7897874978389687",
+            "c78e1c8773718c38",
+            "878d70628f9970c7",
+            "6d32922996d969d2",
+            "3725cb92244d93e6",
+            "db2d25242492dadb"
+        ];
+
+        pad1 = new WritingPad.Pad(document.getElementById("pad1"));
+        pad1.writable = false;
+        pad1.showChar = false;
+        //pad1.showCharOutline = true;
+        pad2 = new WritingPad.Pad(document.getElementById("pad2"));
+        pad2.character = "我";
+        pad2.showCharOutline = true;
+
+        pad2.didEndDrawSegment = function (data) {
+            console.log(JSON.stringify(data));
+            pad1.setJsonObj(data);
+            document.getElementById("charImage").src = pad2.getCharImage();
+        }
+    </script>
 </body>
 
 </html>

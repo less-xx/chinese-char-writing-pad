@@ -24,14 +24,19 @@
   ],
   "license": "Apache License V2",
   "devDependencies": {
+    "browserify": "^15.1.0",
     "del": "^3.0.0",
     "graceful-fs": "^4.0.0",
     "gulp": "latest",
-    "gulp-open": "latest",
-    "gulp-typescript": "latest",
+    "gulp-open": "^2.1.0",
+    "gulp-sourcemaps": "^2.6.3",
+    "gulp-typescript": "^3.2.3",
     "gulp-uglify": "latest",
     "minimatch": "^3.0.2",
-    "typescript": "latest"
+    "requirejs": "~2.3.5",
+    "tsify": "^3.0.4",
+    "typescript": "^2.6.2",
+    "vinyl-source-stream": "^2.0.0"
   },
   "dependencies": {
     "@mapbox/polyline": "^0.2.0"
