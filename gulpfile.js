@@ -19,17 +19,18 @@ gulp.task("build:code", function () {
     return browserify({
             basedir: '.',
             standalone: 'WritingPad',
-            debug: true,
+            debug: false,
             entries: ['src/WritingPad.ts'],
             cache: {},
             packageCache: {}
         })
         .plugin(tsify,{
             module: 'commonjs',
-            moduleResolution: 'classic'
+            moduleResolution: 'classic',
+            declaration: true
         })
         .bundle()
-        .pipe(source('bundle.js'))
+        .pipe(source('cn-writing-pad.js'))
         .pipe(gulp.dest("dist"));
 });
 

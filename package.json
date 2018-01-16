@@ -2,7 +2,7 @@
   "name": "cn-writing-pad",
   "version": "0.0.1",
   "description": "Chinese Character Writing Pad",
-  "main": "cn-writing-pad.js",
+  "main": "dist/cn-writing-pad.js",
   "scripts": {
     "start": "gulp",
     "build": "gulp build"
